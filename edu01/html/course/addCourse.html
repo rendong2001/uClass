@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title></title>
+		<meta charset="UTF-8">
+		<link rel="stylesheet" href="../../element-ui-2.13.0/lib/theme-chalk/index.css" />
+		<script type="text/javascript" src="../../vue/vue-v2.6.10.js"></script>
+		<script type="text/javascript" src="../../element-ui-2.13.0/lib/index.js"></script>
+		<script type="text/javascript" src="../../vue/axios-0.18.0.js"></script>
+	</head>
+
+	<body>
+		<div id="app">
+			<!--上传课程-->
+			<el-tag type="info" effect="dark" closable="true" :disable-transitions="disable" @close="handleClose">添加课程</el-tag>
+			<div v-if="inputVisible">
+			<!--表单-->
+			<el-form  :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+				<el-form-item label="课程名称" prop="courseName">
+					<el-input v-model="ruleForm.courseName" style="width: 210px;"></el-input>
+				</el-form-item>
+				<el-form-item label="课程简介" prop="descs">
+					<el-input v-model="ruleForm.descs" style="width: 210px;"></el-input>
+				</el-form-item>
+				<el-form-item label="课程类型" prop="courseType">
+					<el-select v-model="ruleForm.courseType" placeholder="请选择课程类型">
+						<el-option label="JavaEE" value="1"></el-option>
+						<el-option label="数据库" value="2"></el-option>
+						<el-option label="前端技术" value="3"></el-option>
+					</el-select>
+				</el-form-item>
+
+				<el-upload style="margin-left: 25px;" :on-remove="handleRemove" :on-exceed="handleExceed" :http-request="myUpload" class="upload-demo" ref="upload1" action="http://localhost/education/courses?method=uploadFile" :limit="1" :auto-upload="false">
+					<el-button slot="trigger" size="small" type="primary">选取图片</el-button>
+					<el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload(1)">上传到服务器</el-button>
+				</el-upload>
+				<img :src="dialogImageUrl" style="width: 100px;height: 100px;margin-left: 25px;" alt="" />
+
+				<el-upload style="margin-left: 25px;" :on-remove="handleRemove" :on-exceed="handleExceed" :http-request="myUpload" class="upload-demo" ref="upload2" action="http://localhost/education/courses?method=uploadFile" :limit="1" :auto-upload="false">
+					<el-button slot="trigger" size="small" type="primary">选取视频</el-button>
+					<el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload(2)">上传到服务器</el-button>
+				</el-upload>
+
+				<video controls autoplay  muted="muted" style="width: 100px;height: 100px;margin-left: 25px;margin-top: 5px;" :src="dialogVedioUrl"></video>
+
+				<el-form-item label="课程价格" prop="coursePrice">
+					<el-input v-model="ruleForm.coursePrice" style="width: 210px;"></el-input>
+				</el-form-item>
+				<el-form-item label="状态" prop="status">
+					<el-radio-group v-model="ruleForm.status">
+						<el-radio label="0">未上架</el-radio>
+						<el-radio label="1">上架</el-radio>
+						<el-radio label="2">下架</el-radio>
+					</el-radio-group>
+				</el-form-item>
+			</el-form>
+			<div slot="footer" class="dialog-footer" style="margin-left: 20px;">
+				<el-button @click="handleClose">取 消</el-button>
+				<el-button type="primary" @click="submitForm('ruleForm')">确 定</el-button>
+			</div>
+			</div>
+			<!--结尾-->
+		</div>
+	</body>
+	<script>
+		axios.defaults.withCredentials = true
+		new Vue({
+			el: "#app",
+			data: {
+				/*校验的字段*/
+				ruleForm: {
+					courseName: '',
+					descs: '',
+					courseType: '',
+					coursePrice: '',
+				},
+				/*规则*/
+				rules: {
+					courseName: [{
+						required: true,
+						message: '请输入课程名称',
+						trigger: 'blur'
+					}, ],
+					descs: [{
+						required: true,
+						message: '请选择课程简介',
+						trigger: 'blur'
+					}],
+					courseType: [{
+						required: true,
+						message: '请选择课程类型',
+						trigger: 'change'
+					}],
+					coursePrice: [{
+						required: true,
+						message: '请输入课程价格',
+						trigger: 'blur'
+					}],
+					status: [{
+						required: true,
+						message: '请至少选择一个状态',
+						trigger: 'change'
+
+					}]
+				},
+				/*文件上传*/
+				dialogImageUrl: '',
+				dialogVedioUrl: '',
+				/*选项卡*/
+				inputVisible: true,
+				disable: false,
+			},
+			methods: {
+				
+				handleClose() {
+				
+				},
+			
+				handleExceed(files, fileList) {
+				
+				},
+			
+				submitUpload(value) {
+				
+				},
+			
+				handleRemove(file, fileList) {
+					
+				},
+			
+				myUpload(content) {
+
+				},
+				submitForm(formName) {
+					
+				}
+
+			}
+		})
+	</script>
+
+</html>

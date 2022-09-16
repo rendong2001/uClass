@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="../../element-ui-2.13.0/lib/theme-chalk/index.css" />
+    <script type="text/javascript" src="../../vue/vue-v2.6.10.js"></script>
+    <script type="text/javascript" src="../../element-ui-2.13.0/lib/index.js"></script>
+    <script type="text/javascript" src="../../vue/axios-0.18.0.js"></script>
+  </head>
+
+  <body>
+    <div id="app">
+      <el-tag type="info" effect="dark" v-if="inputVisible" closable="true" :disable-transitions="disable" @close="handleClose">课程管理</el-tag>
+      <div v-if="inputVisible">
+        <template>
+          <el-table :data="tableData" @selection-change="handleSelectionChange" size="medium" highlight-current-row="true" style="width: 100%">
+            <el-table-column type="selection" width="55" prop="cid"> </el-table-column>
+            <el-table-column width="100px" label="序号" type="index"> </el-table-column>
+            <el-table-column label="课程名称" prop="courseName"> </el-table-column>
+            <el-table-column label="课程类型" prop="courseType">
+              <template slot-scope="{row}">
+                <span v-if="row.courseType==1">Java</span>
+                <span v-if="row.courseType==2">数据库</span>
+                <span v-if="row.courseType==3">前端</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="课程价格" prop="coursePrice"> </el-table-column>
+            <el-table-column label="状态">
+              <template slot-scope="{row}">
+                <el-tag v-if="row.status==0">未上架</el-tag>
+                <el-tag v-if="row.status==1" type="danger">上架</el-tag>
+                <el-tag v-if="row.status==2" type="danger">下架</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作">
+              <template slot-scope="scope">
+                <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">修改</el-button>
+                <el-button size="mini" type="danger" @click="handleLook(scope.$index, scope.row)">详情 </el-button>
+              </template>
+            </el-table-column>
+            <el-table-column align="left" width="200px">
+              <template slot="header" slot-scope="scope">
+                <el-input v-model="search" @blur="findAll()" size="mini" placeholder="输入课程名称搜索" />
+              </template>
+            </el-table-column>
+          </el-table>
+        </template>
+        <br />
+        <el-row>
+          <el-button type="warning" @click="delAll()">删除选中</el-button>
+          <el-button type="primary">
+            <a href="addCourse.html" target="main" style="text-decoration: none; color: white">上传课程</a>
+          </el-button>
+        </el-row>
+        <template>
+          <div class="block" align="right">
+            <el-pagination
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+              :current-page="currentPage"
+              :page-sizes="[3, 4, 5, 6]"
+              :page-size="pageSize"
+              layout="total, sizes, prev, pager, next, jumper"
+              :total="totalCount"
+            >
+            </el-pagination>
+          </div>
+        </template>
+      </div>
+
+      <!--修改课程-->
+      <el-dialog title="收货地址" :visible.sync="dialogFormVisible1" :close-on-click-modal="false">
+        <!--表单-->
+        <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+          <el-form-item label="课程名称" prop="courseName">
+            <el-input v-model="ruleForm.courseName" style="width: 210px"></el-input>
+          </el-form-item>
+          <el-form-item label="课程简介" prop="descs">
+            <el-input v-model="ruleForm.descs" style="width: 210px"></el-input>
+          </el-form-item>
+          <el-form-item label="课程类型" prop="courseType">
+            <el-select v-model="ruleForm.courseType" placeholder="请选择课程类型">
+              <el-option label="JavaEE" :value="1"></el-option>
+              <el-option label="数据库" :value="2"></el-option>
+              <el-option label="前端技术" :value="3"></el-option>
+            </el-select>
+          </el-form-item>
+          <!--上传-->
+          <el-upload
+            style="margin-left: 25px"
+            :on-remove="handleRemove"
+            :on-exceed="handleExceed"
+            :http-request="myUpload"
+            class="upload-demo"
+            ref="upload1"
+            action="http://localhost/education/courses?method=uploadFile"
+            :limit="1"
+            :auto-upload="false"
+          >
+            <el-button slot="trigger" size="small" type="primary">选取图片</el-button>
+            <el-button style="margin-left: 10px" size="small" type="success" @click="submitUpload(1)">上传到服务器 </el-button>
+          </el-upload>
+          <img :src="dialogImageUrl" style="width: 100px; height: 100px; margin-left: 25px" alt="" />
+
+          <el-upload
+            style="margin-left: 25px"
+            :on-remove="handleRemove"
+            :on-exceed="handleExceed"
+            :http-request="myUpload"
+            class="upload-demo"
+            ref="upload2"
+            action="http://localhost/education/courses?method=uploadFile"
+            :limit="1"
+            :auto-upload="false"
+          >
+            <el-button slot="trigger" size="small" type="primary">选取视频</el-button>
+            <el-button style="margin-left: 10px" size="small" type="success" @click="submitUpload(2)">上传到服务器 </el-button>
+          </el-upload>
+
+          <video controls autoplay muted="muted" style="width: 100px; height: 100px; margin-left: 25px; margin-top: 5px" :src="dialogVedioUrl"></video>
+          <el-form-item label="课程价格" prop="coursePrice">
+            <el-input v-model="ruleForm.coursePrice" style="width: 210px"></el-input>
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-radio-group v-model="ruleForm.status">
+              <el-radio :label="0">未上架</el-radio>
+              <el-radio :label="1">上架</el-radio>
+              <el-radio :label="2">下架</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogFormVisible1 = false">取 消</el-button>
+          <el-button type="primary" @click="submitForm('ruleForm')">确 定</el-button>
+        </div>
+      </el-dialog>
+      <!--结尾-->
+
+      <!--查看课程-->
+      <el-dialog title="查看课程" :visible.sync="dialogFormVisible2">
+        <el-form ref="ruleForm" :model="ruleForm" label-width="80px">
+          <el-form-item label="课程名称">
+            <el-input v-model="ruleForm.courseName" style="width: 210px"></el-input>
+          </el-form-item>
+          <el-form-item label="课程简介">
+            <el-input v-model="ruleForm.descs" style="width: 210px"></el-input>
+          </el-form-item>
+          <el-form-item label="课程类型">
+            <el-select v-model="ruleForm.courseType" placeholder="请选择课程类型">
+              <el-option label="JavaEE" :value="1"></el-option>
+              <el-option label="数据库" :value="2"></el-option>
+              <el-option label="前端技术" :value="3"></el-option>
+            </el-select>
+          </el-form-item>
+
+          <img :src="dialogImageUrl" style="width: 100px; height: 100px; margin-left: 25px" alt="" />
+
+          <video controls autoplay muted="muted" style="width: 100px; height: 100px; margin-left: 25px; margin-top: 5px" :src="dialogVedioUrl"></video>
+          <el-form-item label="课程价格">
+            <el-input v-model="ruleForm.coursePrice" style="width: 210px"></el-input>
+          </el-form-item>
+          <el-form-item label="状态">
+            <el-radio-group v-model="ruleForm.status">
+              <el-radio :label="0">未上架</el-radio>
+              <el-radio :label="1">上架</el-radio>
+              <el-radio :label="2">下架</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-form>
+      </el-dialog>
+      <!--结尾-->
+    </div>
+  </body>
+  <script>
+    axios.defaults.withCredentials = true
+    new Vue({
+      el: '#app',
+      data: {
+        /*表格数据*/
+        tableData: [],
+        /*条件查询关键字*/
+        search: '',
+        //批量删除存放选中的复选框
+        multipleSelection: [],
+        //存放删除的数据
+        delarr: [],
+        //当前页
+        currentPage: 1,
+        //每页显示条数
+        pageSize: 3,
+        //总条数
+        totalCount: '',
+        //总页数
+        totalPage: '',
+        //修改的对话框
+        dialogFormVisible1: false,
+        //详情的对话框
+        dialogFormVisible2: false,
+        /*文件上传*/
+        dialogImageUrl: '',
+        dialogVedioUrl: '',
+        //表单字段
+        ruleForm: {
+          cid: '',
+          courseName: '',
+          descs: '',
+          courseType: '',
+          coursePrice: '',
+          courseImage: '',
+          courseVideo: ''
+        },
+        /*校验规则*/
+        rules: {
+          courseName: [
+            {
+              required: true,
+              message: '请输入课程名称',
+              trigger: 'blur'
+            }
+          ],
+          descs: [
+            {
+              required: true,
+              message: '请选择课程简介',
+              trigger: 'blur'
+            }
+          ],
+          courseType: [
+            {
+              required: true,
+              message: '请选择课程类型',
+              trigger: 'change'
+            }
+          ],
+          coursePrice: [
+            {
+              required: true,
+              message: '请输入课程价格',
+              trigger: 'blur'
+            }
+          ],
+          status: [
+            {
+              required: true,
+              message: '请至少选择一个状态',
+              trigger: 'change'
+            }
+          ]
+        },
+        /*选项卡*/
+        inputVisible: true,
+        disable: false
+      },
+      methods: {
+        handleClose() {},
+
+        handleEdit(index, row) {},
+
+        handleExceed(files, fileList) {},
+
+        submitUpload(value) {},
+
+        handleRemove(file, fileList) {},
+
+        myUpload(content) {},
+
+        submitForm(formName) {},
+
+        handleLook(index, row) {},
+
+        handleSelectionChange(val) {},
+
+        delAll() {},
+
+        handleSizeChange: function (size) {},
+        handleCurrentChange: function (currentPage) {},
+
+        handleRemove(file, fileList) {},
+
+        handlePreview(file) {},
+
+        handleExceed(files, fileList) {
+          this.$message.warning(`当前限制选择 1 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`)
+        },
+
+        findAll() {}
+      }
+    })
+  </script>
+</html>
