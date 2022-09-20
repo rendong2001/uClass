@@ -17,8 +17,8 @@ public class BaseServlet extends HttpServlet {
         String mark = req.getParameter("mark");
         Class<? extends BaseServlet> aClass = this.getClass();
         try {
-            Method m = aClass.getMethod(mark,HttpServletRequest.class,HttpServletResponse.class);
-            m.invoke(this,req,resp);
+            Method m = aClass.getMethod(mark, HttpServletRequest.class, HttpServletResponse.class);
+            m.invoke(this, req, resp);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
