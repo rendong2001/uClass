@@ -285,7 +285,7 @@
               axios({
                 url: 'http://localhost:8080/maven_test/userServlet',
                 method: 'post',
-                params: params,
+                data: params,
                 responseType: 'json'
               })
                 .then(res => {
