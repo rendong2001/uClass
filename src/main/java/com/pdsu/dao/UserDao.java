@@ -71,14 +71,14 @@ public class UserDao {
      *
      * @return
      */
-    public int queryTotalSize() {
+    public int queryTotalSize(String search) {
         //查询的结果是函数
-        String sql = "select count(*) from user";
+        String sql = "select count(*) from user where username like '%" + search + "%'";
         try {
             //ScalarHandler 专门查询聚合函数的  返回结果是Object类型
             //Object----long----int 返回回去
-            long l = (long) qr.query(sql, new ScalarHandler<>());
-            return (int) l;
+            long l = (long)qr.query(sql,new ScalarHandler<>());
+            return (int)l;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -91,10 +91,10 @@ public class UserDao {
      * @param pt
      * @return
      */
-    public List<User> findByPage(PageTools pt) {
-        String sql = "select * from user limit ?,?";
+    public List<User> findByPage(PageTools pt,String search) {
+        String sql = "select * from user where username like '%" + search + "%' limit ?,? ";
         try {
-            return qr.query(sql, new BeanListHandler<>(User.class), pt.getIndex(), pt.getPageSize());
+            return qr.query(sql,new BeanListHandler<>(User.class),pt.getIndex(),pt.getPageSize());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -111,6 +111,26 @@ public class UserDao {
         String sql = "delete from user where uid in (" + uids + ")";
         try {
             return qr.update(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
+     * 修改用户
+     * @param user
+     * @return
+     */
+    public int updateUser(User user) {
+        //通过uid进行修改
+        String sql = "update user set name=?,phone=?,age=?,sex=?,username=?," +
+                "password=?,status=?,role=? where uid=?";
+        Object[] params = {user.getName(),user.getPhone(),user.getAge(),
+                user.getSex(),user.getUsername(),user.getPassword(),
+                user.getStatus(),user.getRole(),user.getUid()};
+        try {
+            return qr.update(sql,params);
         } catch (SQLException e) {
             e.printStackTrace();
         }
