@@ -2,6 +2,7 @@ package com.pdsu.dao;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.pdsu.bean.User;
+import com.pdsu.utils.MyUtils;
 import com.pdsu.utils.PageTools;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
@@ -12,7 +13,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class UserDao {
-    private QueryRunner qr = new QueryRunner(new ComboPooledDataSource());
+    //private QueryRunner qr = new QueryRunner(new ComboPooledDataSource());
 
     /**
      * 查询所有用户信息
@@ -21,7 +22,7 @@ public class UserDao {
         String sql = "select * from user";
         //执行sql
         try {
-            return qr.query(sql, new BeanListHandler<>(User.class));
+            return MyUtils.qr.query(sql,new BeanListHandler<>(User.class));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -30,16 +31,14 @@ public class UserDao {
 
     /**
      * 管理员登陆
-     *
      * @param username
      * @param password
      * @return
      */
-
     public User adminLogin(String username, String password) {
         String sql = "select * from user where username = ? and password = ?";
         try {
-            return qr.query(sql, new BeanHandler<>(User.class), username, password);
+            return MyUtils.qr.query(sql,new BeanHandler<>(User.class),username,password);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -48,18 +47,17 @@ public class UserDao {
 
     /**
      * 添加用户
-     *
      * @param user
      * @return
      */
     public int addUser(User user) {
         String sql = "insert into user values(?,?,?,?,?,?,?,?,?,?,?)";
-        Object[] params = {null, user.getName(), user.getPhone(),
-                user.getAge(), user.getSex(), user.getUsername(),
-                user.getPassword(), user.getStatus(), user.getCreatetime(),
-                user.getRole(), null};
+        Object[] params = {null,user.getName(),user.getPhone(),
+                user.getAge(),user.getSex(),user.getUsername(),
+                user.getPassword(),user.getStatus(),user.getCreatetime(),
+                user.getRole(),null};
         try {
-            return qr.update(sql, params);
+            return MyUtils.qr.update(sql,params);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -68,7 +66,6 @@ public class UserDao {
 
     /**
      * 查询总条数
-     *
      * @return
      */
     public int queryTotalSize(String search) {
@@ -77,24 +74,22 @@ public class UserDao {
         try {
             //ScalarHandler 专门查询聚合函数的  返回结果是Object类型
             //Object----long----int 返回回去
-            long l = (long)qr.query(sql,new ScalarHandler<>());
+            long l = (long)MyUtils.qr.query(sql,new ScalarHandler<>());
             return (int)l;
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return 0;
     }
-
     /**
      * 分页查询
-     *
      * @param pt
      * @return
      */
     public List<User> findByPage(PageTools pt,String search) {
         String sql = "select * from user where username like '%" + search + "%' limit ?,? ";
         try {
-            return qr.query(sql,new BeanListHandler<>(User.class),pt.getIndex(),pt.getPageSize());
+            return MyUtils.qr.query(sql,new BeanListHandler<>(User.class),pt.getIndex(),pt.getPageSize());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -103,14 +98,13 @@ public class UserDao {
 
     /**
      * 批量删除
-     *
      * @param uids
      * @return
      */
     public int delAll(String uids) {
         String sql = "delete from user where uid in (" + uids + ")";
         try {
-            return qr.update(sql);
+            return MyUtils.qr.update(sql);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -130,14 +124,25 @@ public class UserDao {
                 user.getSex(),user.getUsername(),user.getPassword(),
                 user.getStatus(),user.getRole(),user.getUid()};
         try {
-            return qr.update(sql,params);
+            return MyUtils.qr.update(sql,params);
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return 0;
     }
 
-    public static void main(String[] args) {
-        List<User> users = new UserDao().queryAllUser();
+    /**
+     * 通过uid查询用户信息
+     * @param uid
+     * @return
+     */
+    public User queryUserByUid(int uid) {
+        String sql = "select * from user where uid = ?";
+        try {
+            return MyUtils.qr.query(sql,new BeanHandler<>(User.class),uid);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

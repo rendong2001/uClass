@@ -1,10 +1,14 @@
 package com.pdsu.utils;
 
+import com.pdsu.bean.Course;
+import com.pdsu.bean.CourseUser;
 import com.pdsu.bean.User;
 
 import java.util.List;
 
 public class PageTools {
+
+
     //基础参数
     private int currentPage;//当前页
     private int pageSize;//每页显示的条数
@@ -17,6 +21,16 @@ public class PageTools {
     private int nextPage;//下一页
 
     private List<User> userList;
+    private List<Course> courseList;
+
+    private List<CourseUser> courseUserList;
+
+    public List<CourseUser> getCourseUserList() {
+        return courseUserList;
+    }
+    public void setCourseUserList(List<CourseUser> courseUserList) {
+        this.courseUserList = courseUserList;
+    }
 
 
     //提供一个三个参数的构造方法
@@ -32,6 +46,13 @@ public class PageTools {
         nextPage = (currentPage == totalPage ? currentPage : currentPage + 1);
     }
 
+    public List<Course> getCourseList() {
+        return courseList;
+    }
+
+    public void setCourseList(List<Course> courseList) {
+        this.courseList = courseList;
+    }
 
     public int getCurrentPage() {
         return currentPage;
@@ -107,6 +128,8 @@ public class PageTools {
                 ", prePage=" + prePage +
                 ", totalPage=" + totalPage +
                 ", nextPage=" + nextPage +
+                ", userList=" + userList +
+                ", courseList=" + courseList +
                 '}';
     }
 }
