@@ -39,7 +39,7 @@
             </el-table-column>
             <el-table-column align="left" width="200px" align="center">
               <template slot="header" slot-scope="scope">
-                <el-input v-model="search" size="mini" placeholder="输入用户名称搜索" />
+                <el-input v-model="search" size="mini" @blur="findByPage('search')" placeholder="输入用户名称搜索" />
               </template>
             </el-table-column>
           </el-table>
@@ -56,7 +56,7 @@
               :slot="tableData"
               @current-change="handleCurrentChange"
               :current-page="currentPage"
-              :page-sizes="[3, 4, 5, 6]"
+              :page-sizes="[3, 5, 6,10]"
               :page-size="pageSize"
               layout="total, sizes, prev, pager, next, jumper, slot"
               :total="totalCount"
@@ -113,7 +113,7 @@
 
       <!-- 详情 -->
       <el-dialog title="用户信息" :visible.sync="dialogVisible1" :close-on-click-modal="false" width="30%">
-        <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+        <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm" disabled>
           <el-form-item label="登录名" prop="username">
             <el-input v-model="ruleForm.username" style="width: 210px"></el-input>
           </el-form-item>
@@ -166,7 +166,7 @@
         /*分页相关*/
         tableData: [], //当前页要展示的分页列表数据
         search: '', //查询条件
-        pageSize: 3, //每页显示的记录数
+        pageSize: 6, //每页显示的记录数
         currentPage: 1, //当前页码
         totalCount: '', //总记录数
         /*批量删除*/
@@ -255,9 +255,15 @@
       methods: {
         handleClose() {},
 
-        handleEdit(index, row) {},
+        handleEdit(index, row) {
+          this.dialogVisible = true
+          this.ruleForm = row
+        },
 
-        handlelook(index, row) {},
+        handlelook(index, row) {
+          this.dialogVisible1 = true
+          this.ruleForm = row
+        },
         handleSelectionChange(val) {
           console.log(val)
           this.delarr = val
@@ -265,6 +271,7 @@
 
         delAll() {
           console.log(12312)
+          console.log(this.delarr)
           //把被选中的数据的uid拼接成 1,2,3这种格式传递到后台
           //确认框  点击确认走.then  点击取消走 .catch
           this.$confirm(`您确定要删除吗?`)
@@ -323,6 +330,7 @@
         },
 
         handleSizeChange: function (size) {
+          console.log(size)
           this.pageSize = size
           this.findByPage()
         },
@@ -331,9 +339,47 @@
           this.currentPage = currentPage
           this.findByPage()
         },
-        findByPage() {},
 
-        submitForm(formName) {},
+        submitForm(formName) {
+          //表单验证
+          this.$refs[formName].validate(valid => {
+            if (valid) {
+              //表单验证成功
+              var params = new URLSearchParams()
+              //携带参数   参数都在data中的ruleForm中
+              for (var key in this.ruleForm) {
+                //ruleForm里面有创建时间，后台不需要创建时间
+                if (key != 'createtime') {
+                  params.append(key, this.ruleForm[key])
+                }
+              }
+              //携带mark
+              params.append('mark', 'updateUser')
+              axios({
+                method: 'post',
+                url: `http://localhost:8080/maven_test/userServlet`,
+                data: params,
+                responseType: 'json'
+              })
+                .then(resp => {
+                  if (resp.data.code == 200) {
+                    //修改成功
+                    //刷新页面
+                    location.reload()
+                  } else {
+                    //修改失败
+                    this.$message.error(resp.data.message)
+                  }
+                })
+                .catch(_ => {
+                  this.$message.error(`更新用户信息出现了异常`)
+                })
+            } else {
+              //表单验证失败
+              this.$message.warning(`修改表单验证失败`)
+            }
+          })
+        },
 
         resetForm(formName) {},
         // 查询所有用户信息
@@ -365,17 +411,25 @@
         //     })
         // }
         //分页查询的方法
-        findByPage() {
+        findByPage(obj) {
           //发送请求  携带哪些参数
           /*
     	携带mark  用来匹配方法
     	每页显示的条数  pageSize
     	当前页   currentPage
     */
+          if (obj == 'search') {
+            //将当前页设置为1
+            this.currentPage = 1
+          }
+          console.log('失去焦点')
+          console.log(this.search)
           var params = new URLSearchParams()
           params.append('mark', 'findByPage')
           params.append('pageSize', this.pageSize)
           params.append('currentPage', this.currentPage)
+          //携带模糊搜索的条件
+          params.append('search', this.search)
 
           axios({
             //请求的方式是post

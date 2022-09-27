@@ -28,7 +28,5 @@ public class MyUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 }

@@ -9,6 +9,12 @@
 		<script type="text/javascript" src="../element-ui-2.13.0/lib/index.js"></script>
 		<script type="text/javascript" src="../vue/axios-0.18.0.js"></script>
 		<style>
+			body{
+				margin: 0px;
+			}
+			.el-header{
+				height: 57px !important;
+			}
 			.el-header,
 			.el-footer {
 				background-image: url(../img/ba1.png);
@@ -60,8 +66,8 @@
 					<div style="float: left;">优学管理系统</div>
 					<div style="float: right;font-size: 17px;">
 						<el-link type="success" :underline="false" style="font-size: 17px;">返回前台</el-link>
-						欢迎您:<span></span>
-						<el-link type="primary" style="font-size: 17px;" :underline="false">退出</el-link>
+						欢迎您:<span>{{user.name}}</span>
+						<el-link type="primary" style="font-size: 17px;"  @click="userBack" :underline="false">退出</el-link>
 					</div>
 				</el-header>
 				<el-container>
@@ -100,11 +106,30 @@
 		new Vue({
 			el: "#app",
 			data: {
-			
+				user:''
 			},
 			methods: {
+				getSessionUser(){
+					axios.get('http://localhost:8080/maven_test/userServlet?mark=getSessionUser').then(res=>{
+						if(res.data.code === 200){
+								this.user = res.data.data
+						}
+					}).catch(_ => {
+						this.$message.error('获取session中的用户名出现异常')
+					})
+				},
+				userBack() {
+					axios.get('http://localhost:8080/maven_test/userServlet?mark=removeSessionUser').then(res => {
+						location.href = "login.html"
+					}).catch(err => {
+						this.$message.error('获取session中的用户名出现异常')
+					})
+				}
+			},
+			created() {
+				this.getSessionUser()
+			},
 			
-			}
 		})
 	</script>
 

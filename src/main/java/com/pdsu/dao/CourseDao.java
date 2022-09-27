@@ -49,6 +49,7 @@ public class CourseDao {
         }
         return null;
     }
+
     /**
      * 添加课程
      * @param course
@@ -67,6 +68,7 @@ public class CourseDao {
         }
         return 0;
     }
+
     /**
      * 查询数据通过cids
      * @param cids
@@ -81,6 +83,7 @@ public class CourseDao {
         }
         return null;
     }
+
     /**
      * 批量删除
      * @param cids
@@ -96,6 +99,7 @@ public class CourseDao {
         return 0;
 
     }
+
     /**
      * 查询课程通过cid
      * @param cid
@@ -106,6 +110,20 @@ public class CourseDao {
         try {
             Course course = MyUtils.qr.query(sql, new BeanHandler<>(Course.class), cid);
             return course;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 查询所有课程
+     * @return
+     */
+    public List<Course> findAllCourse() {
+        String sql = "select * from course";
+        try {
+            return MyUtils.qr.query(sql,new BeanListHandler<>(Course.class));
         } catch (SQLException e) {
             e.printStackTrace();
         }
